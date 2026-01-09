@@ -12,21 +12,25 @@ connectDB();
 
 const app = express();
 
-// 🔥 PERFECT CORS - Vite + React support
+// 🔥 VERCEL + LOCAL CORS - PRODUCTION READY
 const allowedOrigins = [
-  "http://localhost:5173",  // Vite default
-  "http://localhost:3000",  // Create React App
-  "http://localhost:3001",  // Other common ports
-  "http://127.0.0.1:5173",
-  "http://127.0.0.1:3000"
+  "http://localhost:5173",      // Vite dev
+  "http://localhost:3000",      // React dev
+  "http://127.0.0.1:5173", 
+  "http://127.0.0.1:3000",
+  "https://ghps-frontend.vercel.app",  // Your frontend (update after deploy)
+  "https://ghps-siddapura-frontend.vercel.app"  // Alternative
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
+    // Allow non-browser requests (Postman, mobile apps)
     if (!origin) return callback(null, true);
+    
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.log("CORS blocked origin:", origin);
       callback(new Error("Not allowed by CORS"));
     }
   },
@@ -41,29 +45,37 @@ app.use(express.urlencoded({ extended: true }));
 // 🔥 ROUTES - PERFECT STRUCTURE
 app.use("/api/events", eventRoutes);
 app.use("/api/gallery", galleryRoutes);
-app.use("/api/admin", adminStatsRoutes);  // Single /api/admin/stats endpoint
+app.use("/api/admin", adminStatsRoutes);
 
 // 🔥 HEALTH CHECK
 app.get("/", (req, res) => {
   res.json({ 
     message: "GHPS Siddapura School Backend ✅",
+    version: "1.0.0",
     endpoints: {
       events: "/api/events",
       gallery: "/api/gallery", 
       stats: "/api/admin/stats"
     },
-    corsAllowed: allowedOrigins 
+    status: "production-ready"
   });
 });
 
-// 🔥 404 HANDLER
+// 🔥 404 HANDLER - BEFORE app.listen()
 app.use("*", (req, res) => {
-  res.status(404).json({ message: "Route not found" });
+  res.status(404).json({ 
+    error: "Route not found",
+    path: req.originalUrl 
+  });
 });
 
+// 🔥 VERCEL READY - Perfect port handling
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Test: http://localhost:${PORT}/api/admin/stats`);
-  console.log(`✅ CORS enabled for: ${allowedOrigins.join(", ")}`);
+  console.log(`✅ CORS enabled for ${allowedOrigins.length} origins`);
 });
+
+// For Vercel Serverless export
+export default app;
