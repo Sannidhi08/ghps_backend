@@ -12,9 +12,22 @@ connectDB();
 
 const app = express();
 
-// 🔥 PERFECT CORS - MATCHES YOUR FRONTEND
+// 🔥 BULLETPROOF CORS - WORKS EVERY CASE
 app.use(cors({
-  origin: "https://ghps-siddaura.vercel.app/",  // ← EXACT MATCH ✅
+  origin: function(origin, callback) {
+    const allowed = [
+      "https://ghps-siddaura.vercel.app",
+      "https://ghps-siddaura.vercel.app/", 
+      "https://ghps-frontend-kohl.vercel.app",
+      "http://localhost:5173"
+    ];
+    
+    if (!origin || allowed.some(url => origin === url)) {
+      return callback(null, true);
+    }
+    
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
@@ -34,7 +47,7 @@ app.use("/api/admin", adminStatsRoutes);
 app.get("/", (req, res) => {
   res.json({ 
     message: "GHPS Siddapura Backend ✅",
-    corsOrigin: "https://ghps-siddaura.vercel.app/",  // ← EXACT MATCH ✅
+    corsOrigins: 4,
     status: "active",
     endpoints: {
       events: "/api/events",
@@ -56,8 +69,6 @@ app.use("*", (req, res) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 GHPS Backend: port ${PORT}`);
-  console.log(`✅ Health: http://localhost:${PORT}/`);
-  console.log(`✅ CORS: https://ghps-siddaura.vercel.app/`);
 });
 
 export default app;
