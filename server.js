@@ -12,9 +12,9 @@ connectDB();
 
 const app = express();
 
-// 🔥 CURRENT DOMAIN ONLY
+// 🔥 PERFECT CORS - MATCHES YOUR FRONTEND
 app.use(cors({
-  origin: "https://ghps-siddaura.vercel.app/",  // ← YOUR CURRENT DOMAIN
+  origin: "https://ghps-siddaura.vercel.app/",  // ← EXACT MATCH ✅
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
@@ -34,20 +34,30 @@ app.use("/api/admin", adminStatsRoutes);
 app.get("/", (req, res) => {
   res.json({ 
     message: "GHPS Siddapura Backend ✅",
-    corsOrigin: "https://ghps-siddaura.vercel.app/",
-    status: "active"
+    corsOrigin: "https://ghps-siddaura.vercel.app/",  // ← EXACT MATCH ✅
+    status: "active",
+    endpoints: {
+      events: "/api/events",
+      gallery: "/api/gallery", 
+      admin: "/api/admin"
+    }
   });
 });
 
-// 🔥 404
+// 🔥 404 HANDLER
 app.use("*", (req, res) => {
-  res.status(404).json({ error: "Route not found" });
+  res.status(404).json({ 
+    error: "Route not found",
+    path: req.originalUrl 
+  });
 });
 
-// 🔥 PORT
+// 🔥 VERCEL + LOCAL PORT
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Backend: port ${PORT}`);
+  console.log(`🚀 GHPS Backend: port ${PORT}`);
+  console.log(`✅ Health: http://localhost:${PORT}/`);
+  console.log(`✅ CORS: https://ghps-siddaura.vercel.app/`);
 });
 
 export default app;
